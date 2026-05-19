@@ -1,6 +1,10 @@
 const CARD_PAIRS = 8;
 const CARD_SYMBOLS = ['🎮', '🎯', '🎨', '🎭', '🎪', '🎺', '🎸', '🎻'];
 
+const BASE_FLIP_BACK_DELAY = 1000;
+const MIN_FLIP_BACK_DELAY = 400;
+const DIFFICULTY_DECREASE = 100;
+
 let cards = [];
 let flippedCards = [];
 let matchedPairs = 0;
@@ -8,6 +12,7 @@ let moves = 0;
 let seconds = 0;
 let timerInterval = null;
 let isProcessing = false;
+let level = 1;
 
 function initGame() {
     createCards();
@@ -82,10 +87,16 @@ function flipCard(index) {
     }
 }
 
+function getFlipBackDelay() {
+    const delay = BASE_FLIP_BACK_DELAY - (level - 1) * DIFFICULTY_DECREASE;
+    return Math.max(delay, MIN_FLIP_BACK_DELAY);
+}
+
 function checkMatch() {
     isProcessing = true;
     
     const [first, second] = flippedCards;
+    const flipBackDelay = getFlipBackDelay();
     
     if (first.card.symbol === second.card.symbol) {
         setTimeout(() => {
@@ -121,7 +132,7 @@ function checkMatch() {
             
             flippedCards = [];
             isProcessing = false;
-        }, 1000);
+        }, flipBackDelay);
     }
 }
 
@@ -162,10 +173,12 @@ function resetGame() {
     matchedPairs = 0;
     flippedCards = [];
     isProcessing = false;
+    level = 1;
     
     updateTimer();
     updateMoves();
     updateMatches();
+    updateLevel();
     
     createCards();
     shuffleCards();
@@ -175,12 +188,23 @@ function resetGame() {
 function gameWon() {
     stopTimer();
     
+    level++;
+    
     document.getElementById('final-time').textContent = document.getElementById('timer').textContent;
     document.getElementById('final-moves').textContent = moves;
+    document.getElementById('final-level').textContent = level - 1;
+    document.getElementById('next-level').textContent = level;
     
     setTimeout(() => {
         document.getElementById('game-over-overlay').style.display = 'flex';
     }, 500);
+}
+
+function updateLevel() {
+    const levelElement = document.getElementById('level');
+    if (levelElement) {
+        levelElement.textContent = level;
+    }
 }
 
 function hideGameOver() {
@@ -191,7 +215,21 @@ function initEventListeners() {
     document.getElementById('restart-btn').addEventListener('click', resetGame);
     document.getElementById('play-again').addEventListener('click', () => {
         hideGameOver();
-        resetGame();
+        stopTimer();
+        seconds = 0;
+        moves = 0;
+        matchedPairs = 0;
+        flippedCards = [];
+        isProcessing = false;
+        
+        updateTimer();
+        updateMoves();
+        updateMatches();
+        updateLevel();
+        
+        createCards();
+        shuffleCards();
+        renderBoard();
     });
 }
 
