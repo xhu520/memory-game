@@ -1,5 +1,8 @@
-const CARD_PAIRS = 8;
-const CARD_SYMBOLS = ['🎮', '🎯', '🎨', '🎭', '🎪', '🎺', '🎸', '🎻'];
+const CARD_SYMBOLS = ['🎮', '🎯', '🎨', '🎭', '🎪', '🎺', '🎸', '🎻', '🎹', '🎤', '🎧', '🎼', '🎵', '🎶', '🎲', '🎯'];
+
+const BASE_FLIP_PAIRS = 4;
+const MAX_FLIP_PAIRS = 8;
+const PAIRS_PER_LEVEL = 1;
 
 const BASE_FLIP_BACK_DELAY = 1000;
 const MIN_FLIP_BACK_DELAY = 400;
@@ -14,6 +17,11 @@ let timerInterval = null;
 let isProcessing = false;
 let level = 1;
 
+function getCardPairs() {
+    const pairs = BASE_FLIP_PAIRS + (level - 1) * PAIRS_PER_LEVEL;
+    return Math.min(pairs, MAX_FLIP_PAIRS);
+}
+
 function initGame() {
     createCards();
     shuffleCards();
@@ -23,7 +31,8 @@ function initGame() {
 
 function createCards() {
     cards = [];
-    for (let i = 0; i < CARD_PAIRS; i++) {
+    const pairs = getCardPairs();
+    for (let i = 0; i < pairs; i++) {
         cards.push({
             id: i * 2,
             symbol: CARD_SYMBOLS[i],
@@ -115,7 +124,7 @@ function checkMatch() {
             flippedCards = [];
             isProcessing = false;
             
-            if (matchedPairs === CARD_PAIRS) {
+            if (matchedPairs === getCardPairs()) {
                 gameWon();
             }
         }, 500);
@@ -163,7 +172,7 @@ function updateMoves() {
 }
 
 function updateMatches() {
-    document.getElementById('matches').textContent = `${matchedPairs}/${CARD_PAIRS}`;
+    document.getElementById('matches').textContent = `${matchedPairs}/${getCardPairs()}`;
 }
 
 function resetGame() {
